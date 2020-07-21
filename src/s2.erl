@@ -1,24 +1,11 @@
 %% ---
 %%---
+
 -module(s2).
 -compile(export_all).
 
-remove(X,[X|Xs])	-> Xs;
-remove(X,[Y|Xs])	-> [Y|remove(X,Xs)];
-remove(_,[])		-> [].
+-import(ercUtils,[remove/2,cat/2,sum/1,accsum/2]).
 
-%% final(X)	->	final(X,[]).
-%% final([],Result)	->	Result;
-%% final([X|Xs],R)		->	addAll(X,final(Xs,[addAll(X,allrotate(Xs))|R])).
-
-cat([X|Xs],R)           ->      [X|cat(Xs,R)];
-cat([],R)               ->      R.
-
-sum([])		-> 0;
-sum([X|T])  	-> X + sum(T).
-
-accsum([],N)	-> N;
-accsum([H|T],K)	-> accsum(T,K+H).
 
 search(Key, [{Key,Val}|_]) -> {ok, Val};        %% (1)
 search(Key, [_|T])         -> search(Key, T);    %% (2)
