@@ -1,11 +1,17 @@
 %% ---
 %%---
 
--module(s2).
+-module(sudoku).
 -compile(export_all).
 
--import(ercUtils,[remove/2,cat/2,sum/1,accsum/2]).
+-import(listUtils,[remove/2,cat/2,sum/1,accsum/2,length1/1,isList/1,isSmall/1,isElem/1,isEmpty/1,
+				  flatten/1,flatten2/1,notMember/2,map/2,member2/2,member/2,listRemove/2,
+				  listRemove2/2,allDiff/2,unique/1,uniqueList/1,toList/1,isFullList/1,sameList/2,different/2]).
+-import(sudokuDisplay,[display/1,display2/1]).
+-import(sudokuBoards,[getFullBoard/0,getFullBoard1/0]).
 
+%% To solve 
+%% sudoku:start1(sudokuBoards:getFullBoard1()).
 
 search(Key, [{Key,Val}|_]) -> {ok, Val};        %% (1)
 search(Key, [_|T])         -> search(Key, T);    %% (2)
@@ -31,8 +37,6 @@ clear(_,[],B)			->	B.
 
 %clearbox([{R,C,Value}|Rest],Board)	->
 %	A	=	applyConstraint(box,{R,C,Value},Board,_),
-
-
 
 
 applyConstraint(row,{R,C1,Value},[{R,C,Domain}|Rest])	->
@@ -115,14 +119,6 @@ clearThis(Values,Domain)	->
 	[float(V) || V <- Values, notMember(V,Domain) ].
 
 
-	
-notMember(X,[X|_])	->
-	false;
-notMember(X,[_|Ys])	->
-	notMember(X,Ys);
-notMember(_,[])		->
-	true.
-
 formDomain(R,C,[{R2,C2,Domain}|Rest]) ->
 	case inBox(R,C,R2,C2,boxes()) of 
 		true	->	flatten2([Domain|formDomain(R,C,Rest)]);
@@ -131,26 +127,7 @@ formDomain(R,C,[{R2,C2,Domain}|Rest]) ->
 formDomain(_,_,[])	->		[].
 
 	
-flatten([[X|Xs]|Rest])	->
-	[X|flatten([Xs|Rest])];
-flatten([[]|Rest])	->	flatten(Rest);
-flatten([X|Xs])		->	[X|Xs];
-flatten([])		->	[].
-
-flatten2([[X|Xs]|Rest])	->
-	[X|flatten2([Xs|Rest])];
-flatten2([[]|Rest])	->	flatten2(Rest);
-flatten2([X|Xs])		->	[X|flatten2(Xs)];
-flatten2([])		->	[].
-
 testForm()	-> uniqueList(formDomain(a,2,[{a,1,[7]},{a,2,[3,5,8]},{a,3,[4,5,6,9]},{b,1,[2,4,5,9]},{b,2,[1,2,3,5]},{b,3,[1,2,4,5,9]},{c,1,[2,4,5,6]},{c,2,[2,3,5]},{c,3,[2,4,5,6]}])).
-
-uniqueList([X|Xs])	->
-	case notMember(X,Xs) of
-		true	->	[X|uniqueList(Xs)];
-		false	->	uniqueList(Xs)
-	end;
-uniqueList([])	->	[].
 
 %% call this with boxes	
 %%
@@ -165,7 +142,6 @@ inBox(_,_,_,_,[])	->
 	false.
 	
 
-	
 
 %% for box reduce
 boxes()	->	[[[a,b,c],[1,2,3]],[[a,b,c],[4,5,6]],[[a,b,c],[7,8,9]],
@@ -190,10 +166,7 @@ test(box,{_,_,Value},[{_,_,Domain}|_]) ->
 
         io:format("CanNOT remove ~p from ~p ~n",[Value,Domain]).
 
-% getEntryBoard standard 19 Oct 2009
 
-getFullBoard1()	->	[{a,2,7},{a,4,2},{a,6,5},{a,8,3},{b,5,8},{b,7,9},{c,1,6},{c,3,9},{c,5,4},{d,4,5},{d,7,4},{e,1,4},{e,2,9},{e,8,5},{e,9,6},{f,3,1},{f,6,4},{g,5,5},{g,7,3},{g,9,8},{h,3,2},{h,5,3},{i,2,3},{i,4,9},{i,6,1},{i,8,2}].
-getFullBoard()	->	[{a,1,7},{a,4,1},{a,9,2},{b,6,6},{b,8,8},{c,4,8},{c,7,1},{c,9,9},{d,3,7},{d,6,9},{d,8,1},{e,2,9},{e,3,3},{e,7,5},{e,8,4},{f,2,6},{f,4,4},{f,7,9},{g,1,3},{g,3,8},{g,6,4},{h,2,4},{h,4,3},{i,1,1},{i,6,5},{i,9,3}].
 getEntryCons1()	->	[{a,4,3},{b,5,2}].
 
 %% Note that constraints must be ordered by row
@@ -228,50 +201,6 @@ integrate([R|Rest],[])          ->
         [R|Rest];
 integrate([],[R|Rest])          ->
         [R|Rest].
-
-display2([{R1,C,Value}|Rest])	->
-	io:format("Row ~p Col ~p Value ~p ~n",[R1,C,Value]),
-	display2(Rest);
-display2([])			->	[].
-
-display([{R1,_,V},{R2,C2,D}|Rest])
-        when    (R1 == R2)      ->
-	io:format("| "),
-        itemDisplay(V), % 
-        preSpaceInsert(V),
-        display([{R2,C2,D}|Rest]);
-display([{R1,_,V},{R2,C2,D}|Rest])
-        when    (R1 < R2)       ->
-	io:format("| "),
-        itemDisplay(V),
-        io:format("~n"),
-        io:format("-------------------------------------------------------------------------------------- ~n"),
-        display([{R2,C2,D}|Rest]);
-display([{_,_,V}])      ->
-	io:format("| "),
-        itemDisplay(V),
-        io:format(" ~n ");
-display([])     ->
-        true.
-
-itemDisplay([X|Xs]) ->
-	io:format("~p",[X]),
-	itemDisplay(Xs);
-itemDisplay([]) -> [];
-itemDisplay(D) -> 
-	io:format("~p",[D]).
-
-preSpaceInsert([X|Xs])	->
-	A = length([X|Xs]),
-	spaceInsert(9-A);
-preSpaceInsert(_)	->
-	spaceInsert(8).
-
-spaceInsert(X) 
-	when X > 0 ->
-	io:format(" "),
-	spaceInsert(X-1);
-spaceInsert(0) -> 0.
 
 start(B)       ->
         display(integrate(B,populate(B))).
@@ -322,21 +251,6 @@ testint5()      ->
         A = allBoxConstraints(integrate(getFullBoard1(),testReduce1(getFullBoard1()))),
 	display(A).
 
-isList([])	->	false;
-isList([_])	->	false;
-isList([_|_])	->	true;
-isList(_)	->	false.
-
-isSmall([])	->	false;
-isSmall([_])	->	true;
-isSmall([_|_])	->	false;
-isSmall(_)	->	true.
-
-isElem([])	->	false;
-isElem([_])	->	true;
-isElem([_|_])	->	false;
-isElem(_)	->	true.
-
 getFixed([])			->	[];	
 getFixed([{R,C,[Value]}|Rest])	->	[{R,C,Value}|getFixed(Rest)];
 getFixed([{R,C,Value}|Rest])	->
@@ -353,41 +267,6 @@ getVariable([{R,C,Value}|Rest])
 getVariable([{_,_,_}|Rest]) ->
 	getVariable(Rest).
 
-
-%
-%	For each cell
-%		choose a value
-%		remove this from all multi-values in box,cell,row
-%	integrate board
-%	For each multi-cell - choose value
-%			remove from all others in row,col,box
-%	
-%
-%
-%
-%
-%
-
-
-allDiff(X,[X])  -> false;
-allDiff(X,[Y]) when not (X == Y)  -> true;
-allDiff(X,[X|_])-> false;
-allDiff(X,[_|T])-> allDiff(X,T).  %% X =/= H has no effect here
-
-unique([])      -> true; %% is this strictly necessary?
-unique([_])     -> true;
-unique([X|T])   ->
-        case allDiff(X,T) of
-                true -> unique(T);
-                false -> false
-        end.
-
-%
-
-% add some sort of unique row
-% attempt to populate centre box first
-
-%
 	
 runit()		->
 	display(integrate(testReduce(getFullBoard()),getFullBoard())).
@@ -407,17 +286,6 @@ runit()		->
 			
 
 %pairMember({{I,J},{N,K}},[[[I,J,_],[N,K,_]]|Rest] )	->	true; 
-
-map(_, [])     -> [];
-map(F,  [H|T]) -> [F(H)|map(F, T)].
-
-member2({I,N,_},[{I,N,_}|_])	-> true;
-member2({I,N,D},[_|T])		-> member2({I,N,D},T);
-member2({_,_,_},[])		-> false.
-
-member(H, [H|_]) -> true;
-member(H, [_|T]) -> member(H, T);
-member(_, [])    -> false.
 
 % 2434/081109/49
 
@@ -565,11 +433,6 @@ formBlockDomain(Type,{R,C,_},Board)	->
 % if anything is a member of BD but Not BND
 % clear from rest of row
 
-toList([X])	->	[X];
-toList([X|Xs])	->	[X|Xs];
-toList([])	->	[];
-toList(E)	->	[E].
-
 clearOutsideBox(_,[],_,_,Board)		->	Board;
 clearOutsideBox(row,Candidate,R,C,[{R,C1,Value}|Rest])	->
 	case	inSideBox(row,R,R,C,C1)	of % and (isElem(Value)) of
@@ -678,27 +541,6 @@ clearDiffEntries(List1,List2)	->
 		List2 -- List1.
 
 
-listRemove(X,[])	-> X;
-listRemove(X,[X])	-> [];
-listRemove(X,[X|_])	-> [];
-listRemove(X,[_])	-> X;
-listRemove(X,[_|_])	-> X;
-listRemove([X],[])	-> [X];
-listRemove([X],[X])	-> [];
-listRemove([X],[_])	-> [X];
-listRemove([X],[X|_])	-> [];
-listRemove([X],[_|Ys])	-> listRemove(X,Ys);
-listRemove([X|Xs],[X|Ys])	-> listRemove(Xs,Ys);
-listRemove([X|Xs],[Y|Ys])	-> [X|listRemove(Xs,[Y|Ys])];
-listRemove([],[_|_])	-> [].
-
-
-listRemove2([X],[X|_])	->	[];
-listRemove2([X|Xs],[Y|Ys])	->	lists:append(listRemove2(Xs,[Y|Ys]),listRemove2(X,Ys));	
-listRemove2([],[_|_])	->	[];
-listRemove2([X],[])	->	[X];
-listRemove2(X,_)		->	X.
-
 
 
 % Xs,Ys - remove any occurrences of Ys from Xs providing result is non-empty
@@ -709,27 +551,10 @@ listrem(X,Y)	->
 		false	->	X
 	end.
 
-isFullList([])	->	false;
-isFullList([_])	->	false;
-isFullList([_|_])	->	true;
-isFullList(_)	->	false.
-
-% same for contained lists and false if first arg is non-list
-sameList([],[])	->	true;
-sameList([X|Xs],Ys)	->
-	case lists:member(X,Ys) of
-		true	->	sameList(Xs,Ys--[X]);
-		false	->	false
-	end;
-sameList(_,_)	->	false.
-
 
 isFinished(Board)	->	
 	A = [{R,C,Value} || {R,C,Value} <- Board, not(isElem(Value))],
 	isEmpty(A).
-
-isEmpty([])		->	true;
-isEmpty(_)		->	false.
 
 
 %select([],IB,Count)			->	select(IB,IB,Count);	% used for initialbacktracking scenario
@@ -939,16 +764,6 @@ validUnit(box,{R,C,Val},[{R1,C1,Val1}|Rest])	->
 			validUnit(box,{R,C,Val},Rest)
 	end.
 
-different(V,V1)	->
-	case	isElem(V)	and	isElem(V1)	of
-	true	->
-			case	V == V1	of
-			true	->	false;
-			false	->	true
-			end;
-	false	->	true	
-	end.
-
 
 sortFewest(R)	->	sortFewest(R,[]).
 
@@ -966,15 +781,7 @@ insert({R,C,V},[{R1,C1,V1}|Rest])	->
 	end;
 insert({R,C,V},[])	->	[{R,C,V}].
 
-%	prolog length
-%	length([],0).
-%	length([X|Xs],Y+1):-
-%		length(Xs,Y).
-	
-length1([X|Xs])	->
-	1 + length1(Xs);
-length1([])	->	0;
-length1(_)	->	1.
+
 
 sortDisp(R)	->	sortDisp(R,[]).
 
