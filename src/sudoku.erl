@@ -18,7 +18,7 @@ search(Key, [_|T])         -> search(Key, T);    %% (2)
 search(_, [])              -> error.             %% (3)
 
 
-%% Input is the entry board
+%% Input is the entry board so we populate missing cells
 
 populate(Input)	->	Domain = [1,2,3,4,5,6,7,8,9],
 			Row = [a,b,c,d,e,f,g,h,i],
