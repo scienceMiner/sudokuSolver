@@ -2,7 +2,7 @@
 %% @doc @todo Add description to nq.
 
 
--module(chess360).
+-module(chess960).
 -import(lists,[member/2,zip/2]). 
 -compile(export_all).
 
