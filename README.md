@@ -20,3 +20,7 @@ The rules for a Fischer Random Board are:
   
  This process simply outputs all 960 varations in list form.
  
+To generate all 960 varations:
+
+chess960:solve().
+
